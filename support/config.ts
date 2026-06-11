@@ -27,7 +27,7 @@ export const Config = {
   },
   qaTeamGuid: require_env('QA_TEAM_GUID', '8dd0464c-ec8b-4ee0-9a16-24d5e0ad2f1d'),
 
-  pyStoragePath: path.resolve(__dirname, '../../py_storage.json'),
+  pyStoragePath: path.resolve(__dirname, '../py_storage.json'),
 
   screenshots: path.resolve(__dirname, '../test-results/screenshots'),
 };
