@@ -43,28 +43,6 @@ export default async function globalSetup(_config: FullConfig) {
     fs.writeFileSync(pythonStatePath, JSON.stringify({ cookies: [], origins: [] }, null, 2));
   }
 
-  // ── Cloud login (app.prutan.com) ──────────────────────────────────────────
-  const cloudStatePath = path.join(authDir, 'cloud-auth.json');
-
-  if (Config.cloud.user && Config.cloud.password) {
-    console.log('[setup] Logging in to Cloud (app.prutan.com)...');
-    const cloudToken = await loginAndGetToken(Config.cloud.url, Config.cloud.user, Config.cloud.password);
-    if (cloudToken) {
-      const cloudOrigin = new URL(Config.cloud.url).origin;
-      const cloudState = {
-        cookies: [],
-        origins: [{ origin: cloudOrigin, localStorage: [{ name: 'auth', value: cloudToken }] }],
-      };
-      fs.writeFileSync(cloudStatePath, JSON.stringify(cloudState, null, 2));
-      console.log('[setup] Cloud auth written → auth/cloud-auth.json');
-    } else {
-      console.warn('[setup] Cloud login failed — cloud tests will run unauthenticated');
-      fs.writeFileSync(cloudStatePath, JSON.stringify({ cookies: [], origins: [] }, null, 2));
-    }
-  } else {
-    console.log('[setup] PRUTAN_CLOUD_USER not set — writing empty cloud auth (cloud tests run unauthenticated)');
-    fs.writeFileSync(cloudStatePath, JSON.stringify({ cookies: [], origins: [] }, null, 2));
-  }
 }
 
 function loginAndGetToken(baseUrl: string, email: string, password: string): Promise<string | null> {

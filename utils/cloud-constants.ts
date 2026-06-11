@@ -3,7 +3,8 @@ import * as path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-export const BASE_URL = process.env['PRUTAN_CLOUD_URL'] ?? 'https://app.prutan.com';
+// Same PruTAN app as python-engine — reuses the same server URL and credentials
+export const BASE_URL = process.env['PYTHON_ENGINE_URL'] ?? 'http://13.233.206.245:8080';
 
 export const ROUTES = {
   STUDIO      : `${BASE_URL}/prutan/core/ui/#/home/collections`,
@@ -16,8 +17,8 @@ export const ROUTES = {
 };
 
 export const CREDS = {
-  EMAIL : process.env['PRUTAN_CLOUD_USER'] ?? '',
-  PASS  : process.env['PRUTAN_CLOUD_PASS'] ?? '',
+  EMAIL : process.env['PYTHON_ENGINE_USER'] ?? '',
+  PASS  : process.env['PYTHON_ENGINE_PASS'] ?? '',
 };
 
 export const HTTP_METHODS = [

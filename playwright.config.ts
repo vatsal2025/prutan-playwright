@@ -39,42 +39,28 @@ export default defineConfig({
 
   projects: [
     // ── Python Engine ───────────────────────────────────────────────────────
+    // Runs all tests: existing module tests (tests/) + comprehensive UI tests (tests/cloud/).
+    // Both target the same PruTAN Angular app — cloud tests just use page.goto() directly.
     {
       name: 'python-engine',
-      testIgnore: ['**/cloud/**'],
       use: {
         ...devices['Desktop Chrome'],
         baseURL: `${PYTHON_BASE}/prutan/core/ui/`,
         storageState: './auth/python-auth.json',
-        viewport: { width: 1400, height: 900 },
+        viewport: { width: 1440, height: 900 },
       },
     },
 
     // ── Java Desktop (Electron via CDP) ─────────────────────────────────────
-    // CDP connection is handled in the `prutanPage` fixture (fixtures/index.ts)
+    // CDP connection is handled in the `prutanPage` fixture (fixtures/index.ts).
     // Start Prutan.exe with --remote-debugging-port=9222 before running desktop tests.
+    // Cloud tests excluded: they use page.goto() which doesn't apply to CDP sessions.
     {
       name: 'java-desktop',
       testIgnore: ['**/cloud/**'],
       use: {
         baseURL: process.env['DESKTOP_BASE_URL'] ?? 'http://localhost:59140',
         viewport: null,
-      },
-    },
-
-    // ── PruTAN Cloud (app.prutan.com) ─────────────────────────────────────────
-    // Comprehensive UI/UX tests targeting production cloud.
-    // Auth: set PRUTAN_CLOUD_USER + PRUTAN_CLOUD_PASS in .env — runs unauthenticated if absent.
-    {
-      name: 'prutan-cloud',
-      testDir: './tests/cloud',
-      use: {
-        ...devices['Desktop Chrome'],
-        baseURL: process.env['PRUTAN_CLOUD_URL'] ?? 'https://app.prutan.com',
-        storageState: './auth/cloud-auth.json',
-        viewport: { width: 1440, height: 900 },
-        actionTimeout: 15_000,
-        navigationTimeout: 30_000,
       },
     },
   ],
