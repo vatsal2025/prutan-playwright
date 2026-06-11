@@ -30,4 +30,10 @@ export const Config = {
   pyStoragePath: path.resolve(__dirname, '../py_storage.json'),
 
   screenshots: path.resolve(__dirname, '../test-results/screenshots'),
+
+  nevup: {
+    // Root of the NevUp app (parent of dist/main/main.js and node_modules/electron).
+    // Override with NEVUP_APP_ROOT in .env when the app lives elsewhere.
+    appRoot: process.env['NEVUP_APP_ROOT'] ?? path.resolve(__dirname, '../../../NevUp Desk/app'),
+  },
 };
