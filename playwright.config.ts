@@ -61,6 +61,22 @@ export default defineConfig({
         viewport: null, // CDP pages use the window's native viewport
       },
     },
+
+    // ── PruTAN Cloud (app.prutan.com) ─────────────────────────────────────────
+    // Comprehensive UI/UX tests targeting production cloud.
+    // Auth: set PRUTAN_CLOUD_USER + PRUTAN_CLOUD_PASS in .env — runs unauthenticated if absent.
+    {
+      name: 'prutan-cloud',
+      testDir: './tests/cloud',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: process.env['PRUTAN_CLOUD_URL'] ?? 'https://app.prutan.com',
+        storageState: './auth/cloud-auth.json',
+        viewport: { width: 1440, height: 900 },
+        actionTimeout: 15_000,
+        navigationTimeout: 30_000,
+      },
+    },
   ],
 
   outputDir: 'test-results',

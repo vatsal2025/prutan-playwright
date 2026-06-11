@@ -6,8 +6,11 @@ import * as http from 'http';
 import { Config } from './support/config';
 
 export default async function globalSetup(_config: FullConfig) {
-  console.log('[setup] Logging in to Python engine...');
+  const authDir = path.resolve(__dirname, 'auth');
+  if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true });
 
+  // ── Python engine login ───────────────────────────────────────────────────
+  console.log('[setup] Logging in to Python engine...');
   const token = await loginAndGetToken(
     Config.pythonEngine.url,
     Config.pythonEngine.user,
@@ -21,24 +24,42 @@ export default async function globalSetup(_config: FullConfig) {
 
   console.log('[setup] Login successful');
 
-  // Update py_storage.json with fresh token
   const storage: Record<string, string> = fs.existsSync(Config.pyStoragePath)
     ? JSON.parse(fs.readFileSync(Config.pyStoragePath, 'utf-8').replace(/^﻿/, ''))
     : {};
   storage.auth = token;
   fs.writeFileSync(Config.pyStoragePath, JSON.stringify(storage, null, 2));
 
-  // Write Playwright storageState for python-engine project
   const origin = new URL(Config.pythonEngine.url).origin;
   const lsEntries = Object.entries(storage).map(([name, value]) => ({ name, value: String(value) }));
   const state = { cookies: [], origins: [{ origin, localStorage: lsEntries }] };
 
-  const authDir = path.resolve(__dirname, 'auth');
-  if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true });
-
   const statePath = path.join(authDir, 'python-auth.json');
   fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
   console.log(`[setup] Auth state written → ${statePath}`);
+
+  // ── Cloud login (app.prutan.com) ──────────────────────────────────────────
+  const cloudStatePath = path.join(authDir, 'cloud-auth.json');
+
+  if (Config.cloud.user && Config.cloud.password) {
+    console.log('[setup] Logging in to Cloud (app.prutan.com)...');
+    const cloudToken = await loginAndGetToken(Config.cloud.url, Config.cloud.user, Config.cloud.password);
+    if (cloudToken) {
+      const cloudOrigin = new URL(Config.cloud.url).origin;
+      const cloudState = {
+        cookies: [],
+        origins: [{ origin: cloudOrigin, localStorage: [{ name: 'auth', value: cloudToken }] }],
+      };
+      fs.writeFileSync(cloudStatePath, JSON.stringify(cloudState, null, 2));
+      console.log('[setup] Cloud auth written → auth/cloud-auth.json');
+    } else {
+      console.warn('[setup] Cloud login failed — cloud tests will run unauthenticated');
+      fs.writeFileSync(cloudStatePath, JSON.stringify({ cookies: [], origins: [] }, null, 2));
+    }
+  } else {
+    console.log('[setup] PRUTAN_CLOUD_USER not set — writing empty cloud auth (cloud tests run unauthenticated)');
+    fs.writeFileSync(cloudStatePath, JSON.stringify({ cookies: [], origins: [] }, null, 2));
+  }
 }
 
 function loginAndGetToken(baseUrl: string, email: string, password: string): Promise<string | null> {

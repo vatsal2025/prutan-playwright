@@ -27,6 +27,12 @@ export const Config = {
   },
   qaTeamGuid: require_env('QA_TEAM_GUID', '8dd0464c-ec8b-4ee0-9a16-24d5e0ad2f1d'),
 
+  cloud: {
+    url: process.env['PRUTAN_CLOUD_URL'] ?? 'https://app.prutan.com',
+    user: process.env['PRUTAN_CLOUD_USER'] ?? '',
+    password: process.env['PRUTAN_CLOUD_PASS'] ?? '',
+  },
+
   pyStoragePath: path.resolve(__dirname, '../py_storage.json'),
 
   screenshots: path.resolve(__dirname, '../test-results/screenshots'),
