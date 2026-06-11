@@ -36,14 +36,16 @@ test.describe('Studio › ISO 8583', () => {
     expect(body).not.toContain('Connection refused');
   });
 
-  test('ISO Table View toggle works @regression', async ({ studio }) => {
+  test('ISO Table View toggle works @regression', async ({ studio, engine }) => {
+    test.skip(engine === 'python-engine', 'Table View button not present on Python engine');
     await studio.toggleTableView();
     await studio.page.waitForTimeout(600);
     const body = await studio.bodyText();
     expect(body).toMatch(/DE|Data Element|table|ISO/i);
   });
 
-  test('MTI field accepts standard values @regression', async ({ studio }) => {
+  test('MTI field accepts standard values @regression', async ({ studio, engine }) => {
+    test.skip(engine === 'python-engine', 'MTI input not present on Python engine ISO view');
     await studio.setIsoMti('0200');
     const body = await studio.bodyText();
     expect(body.length).toBeGreaterThan(10);

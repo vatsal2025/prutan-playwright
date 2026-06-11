@@ -5,11 +5,11 @@ export class InterceptorPage extends BasePage {
   readonly url = '#/interceptor';
 
   get startButton(): Locator {
-    return this.page.locator('button').filter({ hasText: /^Start$/ }).first();
+    return this.page.locator('button').filter({ hasText: /Start/ }).first();
   }
 
   get stopButton(): Locator {
-    return this.page.locator('button').filter({ hasText: /^Stop$/ }).first();
+    return this.page.locator('button').filter({ hasText: /Stop/ }).first();
   }
 
   get requestRulesTab(): Locator {

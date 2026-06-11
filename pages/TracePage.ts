@@ -11,7 +11,7 @@ export class TracePage extends BasePage {
   readonly url = '#/trace';
 
   get searchButton(): Locator {
-    return this.page.locator('button').filter({ hasText: /^Search$/ }).first();
+    return this.page.locator('button').filter({ hasText: /Search/ }).first();
   }
 
   get identifierInput(): Locator {

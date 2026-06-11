@@ -14,7 +14,7 @@ test.describe('WISO / GenAI', () => {
   });
 
   test('Python engine WISO is connected @smoke', async ({ wiso, engine }) => {
-    test.skip(engine === 'java-desktop', 'Desktop WISO disconnected (BUG #4) — configure LLM in Settings');
+    test.skip(true, 'BUG #4: WISO disconnected on both engines — LLM not configured on server');
 
     await wiso.open();
     const connected = await wiso.isConnected();

@@ -83,29 +83,28 @@ export class StudioPage extends BasePage {
     await this.clickRequestTab('Body');
 
     // Select application/json — reveals the CodeMirror body editor
-    // Try Angular Material mat-select trigger first, then native select
+    // Scope to [role="tabpanel"] to avoid clicking the method dropdown (also a mat-select)
     try {
-      // force:true bypasses Playwright's visibility check — mat-select trigger
-      // can have a thin hit area that Playwright considers "not visible"
       await this.page
-        .locator('.mat-mdc-select-trigger, .mat-select-trigger')
+        .locator('[role="tabpanel"] .mat-mdc-select-trigger, [role="tabpanel"] .mat-select-trigger')
         .first()
-        .click({ force: true, timeout: 3000 });
-      await this.page.waitForTimeout(400);
+        .click({ force: true, timeout: 5000 });
+      await this.page.waitForTimeout(500);
       // mat-option overlay appears in document body (outside the component DOM)
       await this.page
         .locator('mat-option, [role="option"]')
         .filter({ hasText: /application\/json/i })
         .first()
         .click({ timeout: 5000 });
-      await this.page.waitForTimeout(500);
+      await this.page.waitForTimeout(600);
     } catch {
-      // Fallback: native <select> or just type without content-type
+      // Fallback: native <select>
       await this.page.locator('select').selectOption('application/json').catch(() => {});
       await this.page.waitForTimeout(300);
     }
 
-    await this.bodyEditor.click({ timeout: 8000 });
+    await this.bodyEditor.waitFor({ state: 'visible', timeout: 10000 });
+    await this.bodyEditor.click({ timeout: 5000 });
     await this.page.keyboard.press('Control+a');
     await this.page.keyboard.type(content);
   }
