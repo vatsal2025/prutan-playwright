@@ -61,18 +61,6 @@ export default defineConfig({
         viewport: null, // CDP pages use the window's native viewport
       },
     },
-
-    // ── NevUp Electron app (trading psychology tool) ─────────────────────────
-    // Tests skip automatically when the app binary isn't built.
-    // To build: cd <NEVUP_APP_ROOT> && npm run build
-    // Set NEVUP_APP_ROOT in .env to override the default path.
-    {
-      name: 'nevup-electron',
-      testDir: './tests/nevup',
-      use: {
-        viewport: null,
-      },
-    },
   ],
 
   outputDir: 'test-results',
