@@ -1,19 +1,22 @@
 import { Page, expect } from '@playwright/test';
-import { ROUTES } from '../../utils/cloud-constants';
 
 export class SideBar {
   constructor(readonly page: Page) {}
 
-  studioBtn      = () => this.page.locator('.sidebar a:has-text("Studio"), [data-module="studio"], nav li:has-text("Studio")').first();
-  sandboxBtn     = () => this.page.locator('.sidebar a:has-text("Sandbox"), [data-module="sandbox"], nav li:has-text("Sandbox")').first();
-  interceptorBtn = () => this.page.locator('.sidebar a:has-text("Interceptor"), [data-module="interceptor"]').first();
-  stressLabBtn   = () => this.page.locator('.sidebar a:has-text("Stress"), [data-module="stress"]').first();
-  traceBtn       = () => this.page.locator('.sidebar a:has-text("Trace"), [data-module="trace"]').first();
-  wisoBtn        = () => this.page.locator('.sidebar a:has-text("WISO"), [data-module="wiso"]').first();
-  settingsBtn    = () => this.page.locator('.sidebar a:has-text("Settings"), [data-module="settings"]').first();
+  private navBtn(textRe: RegExp) {
+    return this.page.getByRole('link', { name: textRe }).first();
+  }
 
-  async goToStudio()      { await this.studioBtn().click();      await this.page.waitForURL(/home\/collections/); }
-  async goToSandbox()     { await this.sandboxBtn().click();     await this.page.waitForURL(/host\/collections/); }
+  studioBtn      = () => this.navBtn(/studio/i);
+  sandboxBtn     = () => this.navBtn(/sandbox/i);
+  interceptorBtn = () => this.navBtn(/interceptor/i);
+  stressLabBtn   = () => this.navBtn(/stress/i);
+  traceBtn       = () => this.navBtn(/trace/i);
+  wisoBtn        = () => this.navBtn(/wiso/i);
+  settingsBtn    = () => this.navBtn(/settings/i);
+
+  async goToStudio()      { await this.studioBtn().click();      await this.page.waitForURL(/home/); }
+  async goToSandbox()     { await this.sandboxBtn().click();     await this.page.waitForURL(/host/); }
   async goToInterceptor() { await this.interceptorBtn().click(); await this.page.waitForURL(/interceptor/); }
   async goToStressLab()   { await this.stressLabBtn().click();   await this.page.waitForURL(/stress/); }
   async goToTrace()       { await this.traceBtn().click();       await this.page.waitForURL(/trace/); }
@@ -30,7 +33,9 @@ export class SideBar {
   }
 
   async assertActiveModule(module: string) {
-    const active = this.page.locator('.sidebar [class*="active"], nav li[aria-current]').filter({ hasText: module });
-    await expect(active).toBeVisible();
+    // Angular router adds .router-link-active to active routerLinks
+    const active = this.page.locator('.router-link-active, [class*="active"]')
+      .filter({ hasText: new RegExp(module, 'i') });
+    await expect(active.first()).toBeVisible();
   }
 }

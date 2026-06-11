@@ -3,7 +3,7 @@ import { Page, expect } from '@playwright/test';
 export class TopBar {
   constructor(readonly page: Page) {}
 
-  logo              = () => this.page.locator('img[alt*="PruTAN"], .logo, a:has-text("PruTAN")').first();
+  logo              = () => this.page.locator('img[alt*="PruTAN"], .logo, header :text("PruTAN")').first();
   loginBtn          = () => this.page.locator('button:has-text("Login"), .login-btn').first();
   defaultAgentBtn   = () => this.page.locator('button:has-text("Default Agent"), [data-testid="default-agent"]').first();
   selectEnvBtn      = () => this.page.locator('button:has-text("Select Environment"), [data-testid="env-selector"]').first();
@@ -14,22 +14,36 @@ export class TopBar {
   changePasswordBtn = () => this.page.locator('button:has-text("Change Password")').first();
   dismissBannerBtn  = () => this.page.locator('button:has-text("Dismiss")').first();
 
+  // Custom dropdown items — app uses plain divs, not role="option"
+  dropdownItems = () => this.page.locator(
+    '[role="option"], mat-option, ng-option, ' +
+    'cdk-overlay-pane li, cdk-overlay-pane div[class*="item"], ' +
+    'div[class*="dropdown"] li, div[class*="dropdown"] div[class*="item"]'
+  );
+
   async clickLogin() { await this.loginBtn().click(); }
 
   async openDefaultAgent() {
     await this.defaultAgentBtn().click();
-    await this.page.waitForSelector('[role="listbox"], .dropdown-panel', { state: 'visible' });
+    // Wait for the inline dropdown panel to appear
+    await this.page.waitForTimeout(600);
   }
 
   async openSelectEnvironment() {
     await this.selectEnvBtn().click();
-    await this.page.waitForSelector('[role="listbox"], .env-dropdown', { state: 'visible' });
+    // Wait for "No environment" to appear (always present, confirms dropdown opened)
+    await this.page.locator('text=No environment').first()
+      .waitFor({ state: 'visible', timeout: 8_000 })
+      .catch(() => this.page.waitForTimeout(800));
   }
 
   async selectEnvironment(name: string) {
     await this.openSelectEnvironment();
-    await this.page.locator('[role="option"], .env-item').filter({ hasText: name }).click();
+    await this.page.locator(`text=${name}`).first().click();
   }
+
+  loginModalCloseBtn = () => this.page.locator('div').filter({ hasText: /Login to pruTAN/ })
+    .last().locator('button:not(:has-text("Sign In"))').first();
 
   async dismissPasswordBanner() {
     if (await this.dismissBannerBtn().isVisible({ timeout: 2_000 }).catch(() => false)) {

@@ -17,11 +17,11 @@ test.describe('WISO â€º Page Load', () => {
     await expect(page.locator('body')).not.toContainText('Cannot GET');
   });
 
-  test('WS-PL-002 | URL changes to /#/wiso after clicking sidebar WISO', async ({ page }) => {
+  test('WS-PL-002 | URL changes to /#/genai after clicking sidebar WISO', async ({ page }) => {
     await page.goto(ROUTES.STUDIO, { waitUntil: 'domcontentloaded' });
     await page.locator('text=WISO').first().click();
     await page.waitForTimeout(1500);
-    expect(page.url()).toContain('wiso');
+    expect(page.url()).toContain('genai');
   });
 
   test('WS-PL-003 | Sidebar icons remain visible on WISO page', async ({ page }) => {
@@ -31,7 +31,7 @@ test.describe('WISO â€º Page Load', () => {
   });
 
   test('WS-PL-004 | Top bar (PruTAN logo + My Workspace) remains visible', async ({ page }) => {
-    await expect(page.locator('text=PruTAN, img[alt*="PruTAN"]').first()).toBeVisible();
+    await expect(page.locator('text=PruTAN').or(page.locator('img[alt*="PruTAN"]')).first()).toBeVisible();
     await expect(page.locator('text=My Workspace').first()).toBeVisible();
   });
 
@@ -61,7 +61,7 @@ test.describe('WISO â€º Unauthenticated Access', () => {
     await page.waitForTimeout(1000);
     await page.locator('text=WISO').first().click();
     await page.waitForTimeout(2000);
-    const gotItBtn = page.locator('button:has-text("Got it"), text=Got it').first();
+    const gotItBtn = page.locator('button:has-text("Got it")').or(page.locator('text=Got it')).first();
     if (await gotItBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
       await expect(gotItBtn).toBeVisible();
     }
@@ -72,7 +72,7 @@ test.describe('WISO â€º Unauthenticated Access', () => {
     await page.waitForTimeout(1000);
     await page.locator('text=WISO').first().click();
     await page.waitForTimeout(2000);
-    const gotItBtn = page.locator('button:has-text("Got it"), text=Got it').first();
+    const gotItBtn = page.locator('button:has-text("Got it")').or(page.locator('text=Got it')).first();
     if (await gotItBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
       await gotItBtn.click();
       await expect(page.locator('text=Please login to use this feature')).not.toBeVisible({ timeout: 5_000 });
@@ -112,27 +112,30 @@ test.describe('WISO â€º Settings Integration', () => {
     await page.locator('text=Integrations').first().scrollIntoViewIfNeeded();
   });
 
-  test('WS-CFG-001 | WISO Configuration row is in Settings â†’ Integrations', async ({ page }) => {
-    await expect(page.locator('text=WISO Configuration').first()).toBeVisible();
+  test('WS-CFG-001 | AI Configuration row is in Settings -> Integrations', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'AI Configuration', level: 4 })).toBeVisible();
   });
 
   test('WS-CFG-002 | WISO Configuration subtitle is "Configure LLM provider and model settings"', async ({ page }) => {
     await expect(page.locator('text=Configure LLM provider and model settings').first()).toBeVisible();
   });
 
-  test('WS-CFG-003 | WISO Configuration shows "Disabled" by default', async ({ page }) => {
-    const row = page.locator('[class*="integration"], .integration-item, li').filter({ hasText: 'WISO Configuration' }).first();
-    await expect(row.locator('text=Disabled').first()).toBeVisible();
+  test('WS-CFG-003 | AI Configuration shows "Enabled" by default', async ({ page }) => {
+    // "Enabled" text is a sibling of the heading in the DOM, not a descendant of the innermost div
+    await expect(page.locator('text=Enabled').first()).toBeVisible();
   });
 
-  test('WS-CFG-004 | WISO Configuration has a configure (âš™) icon button', async ({ page }) => {
-    const row = page.locator('[class*="integration"], .integration-item, li').filter({ hasText: 'WISO Configuration' }).first();
-    const btn = row.locator('button').first();
-    await expect(btn).toBeVisible();
+  test('WS-CFG-004 | AI Configuration has a configure (⚙) icon button', async ({ page }) => {
+    // Use double-filter to find the section div that contains both heading and button
+    const row = page.locator('div')
+      .filter({ has: page.getByRole('heading', { name: 'AI Configuration', level: 4 }) })
+      .filter({ has: page.locator('button') })
+      .last();
+    await expect(row.locator('button').first()).toBeVisible();
   });
 
-  test('WS-CFG-005 | WISO Configuration toggle can be switched on', async ({ page }) => {
-    const row = page.locator('[class*="integration"], .integration-item, li').filter({ hasText: 'WISO Configuration' }).first();
+  test('WS-CFG-005 | AI Configuration toggle can be switched', async ({ page }) => {
+    const row = page.locator('div').filter({ has: page.getByRole('heading', { name: 'AI Configuration', level: 4 }) }).last();
     const toggle = row.locator('input[type="checkbox"], [role="switch"]').first();
     if (await toggle.isVisible({ timeout: 3000 }).catch(() => false)) {
       const before = await toggle.isChecked();

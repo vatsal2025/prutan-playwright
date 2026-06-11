@@ -37,7 +37,7 @@ test.describe('Trace Viewer â€” Page Layout', () => {
   });
 
   test('TC-TR-001 | Page heading is "Trace Viewer"', async ({ page }) => {
-    await expect(page.locator('h1:has-text("Trace Viewer"), h2:has-text("Trace Viewer"), text=Trace Viewer').first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Trace Viewer' })).toBeVisible({ timeout: 10_000 });
   });
 
   test('TC-TR-002 | Subtitle describes searchable fields', async ({ page }) => {
@@ -210,7 +210,7 @@ test.describe('Trace Viewer â€” Split Panel Layout', () => {
       page.locator('text=Select a request from the list').first()
     ).toBeVisible();
     await expect(
-      page.locator('text=headers, body').first()
+      page.locator('text=headers').first()
     ).toBeVisible();
     await expect(
       page.locator('text=flow diagram').first()
@@ -283,7 +283,7 @@ test.describe('Trace Viewer â€” Navigation Integration', () => {
     await page.waitForTimeout(1500);
 
     // Click Trace in sidebar
-    await page.locator('.sidebar a:has-text("Trace"), nav li:has-text("Trace"), [data-module="trace"]').first().click();
+    await page.getByRole('link', { name: 'Trace' }).first().click();
     await page.waitForTimeout(2000);
 
     await expect(page).toHaveURL(/trace/);

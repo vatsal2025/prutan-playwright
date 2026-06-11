@@ -3,9 +3,9 @@ import { Page, expect } from '@playwright/test';
 export class StressLab {
   constructor(readonly page: Page) {}
 
-  heading           = () => this.page.locator('h1:has-text("Stress Test"), text=Stress Test Configuration').first();
-  volumeRadio       = () => this.page.locator('input[type="radio"][value*="volume" i], label:has-text("Volume") input').first();
-  durationRadio     = () => this.page.locator('input[type="radio"][value*="duration" i], label:has-text("Duration") input').first();
+  heading           = () => this.page.locator('text=Stress Test Configuration').first();
+  volumeRadio       = () => this.page.getByRole('radio', { name: 'Volume' });
+  durationRadio     = () => this.page.getByRole('radio', { name: 'Duration' });
 
   virtualUsersInput    = () => this.page.locator('input[placeholder*="virtual" i], label:has-text("Virtual users") + input, input[name*="virtualUsers"]').first();
   timeoutInput         = () => this.page.locator('label:has-text("Timeout") + input, input[name*="timeout"]:not([name*="execution"])').first();
@@ -13,7 +13,7 @@ export class StressLab {
   warmupInput          = () => this.page.locator('label:has-text("Warm-up") + input, input[name*="warmup"]').first();
   execTimeoutInput     = () => this.page.locator('label:has-text("Execution Timeout") + input, input[name*="execTimeout"]').first();
 
-  benchmarkTypeDropdown = () => this.page.locator('select:near(:text("Type")), [data-testid="benchmark-type"]').first();
+  benchmarkTypeDropdown = () => this.page.getByRole('textbox', { name: 'Type' });
   thresholdInput        = () => this.page.locator('input[placeholder*="threshold" i], label:has-text("Threshold") + input').first();
   selectHostInput       = () => this.page.locator('input[placeholder*="host" i], label:has-text("Select Host") + input, a:has-text("Select Host")').first();
 
@@ -50,8 +50,8 @@ export class StressLab {
   async assertNoScriptsEmpty() { await expect(this.noScriptsMsg()).toBeVisible(); await expect(this.addScriptsBtn()).toBeVisible(); }
 
   async assertModeRadiosVisible() {
-    await expect(this.volumeRadio().or(this.page.locator('label:has-text("Volume")'))).toBeVisible();
-    await expect(this.durationRadio().or(this.page.locator('label:has-text("Duration")'))).toBeVisible();
+    await expect(this.volumeRadio().or(this.page.getByText('Volume')).first()).toBeVisible();
+    await expect(this.durationRadio().or(this.page.getByText('Duration')).first()).toBeVisible();
   }
 
   async assertDefaultValues() {

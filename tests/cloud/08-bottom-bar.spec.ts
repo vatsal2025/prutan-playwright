@@ -46,15 +46,19 @@ test.describe('Bottom Bar', () => {
     if (await leftBtns.count() > 0) {
       await expect(leftBtns.first()).toBeVisible();
     } else {
-      // At minimum the bottom bar area should exist
-      await expect(page.locator('[class*="status-bar"], [class*="bottom-bar"], footer').first()).toBeVisible();
+      // Bottom bar confirmed by Help & feedback button presence
+      await expect(page.locator('button:has-text("Help & feedback")').first()).toBeVisible();
     }
   });
 
   test('TC-BB-007 | Right side icons are present (at least 3)', async ({ page }) => {
-    // From inspection: Help & feedback | proxy | trash | âš¡ | split | fullscreen
-    const rightIcons = page.locator('.bottom-bar button, [class*="status-bar"] button, footer button');
-    const count = await rightIcons.count();
+    // Count buttons outside header/nav/main (bottom bar area)
+    const count = await page.evaluate(() => {
+      const excluded = ['HEADER', 'NAV', 'MAIN', 'ASIDE'];
+      return Array.from(document.querySelectorAll('button')).filter(
+        b => !excluded.some(tag => b.closest(tag))
+      ).length;
+    });
     expect(count).toBeGreaterThanOrEqual(3);
   });
 });

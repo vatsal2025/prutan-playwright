@@ -14,13 +14,13 @@ export async function goto(page: Page, route: string) {
 }
 
 export async function hoverCollection(page: Page, name: string) {
-  const row = page.locator('li, [class*="collection-item"]').filter({ hasText: name }).first();
+  const row = page.locator('[role="treeitem"]').filter({ hasText: name }).first();
   await row.hover();
 }
 
 export async function openCollectionMenu(page: Page, name: string) {
   await hoverCollection(page, name);
-  const row = page.locator('li, [class*="collection-item"]').filter({ hasText: name }).first();
+  const row = page.locator('[role="treeitem"]').filter({ hasText: name }).first();
   await row.locator('button[title*="more" i], button[aria-label*="more" i], button:has-text("⋮"), [data-testid="more-btn"]')
     .or(row.locator('button').last())
     .click();

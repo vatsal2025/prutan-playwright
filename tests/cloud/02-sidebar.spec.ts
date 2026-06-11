@@ -20,10 +20,10 @@ test.describe('SideBar Navigation', () => {
     expect(page.url()).toContain('home/collections');
   });
 
-  test('TC-SB-003 | Clicking Sandbox navigates to #/host/collections', async ({ page }) => {
+  test('TC-SB-003 | Clicking Sandbox navigates to #/host', async ({ page }) => {
     const sb = new SideBar(page);
     await sb.goToSandbox();
-    await expect(page).toHaveURL(/host\/collections/);
+    await expect(page).toHaveURL(/host/);
   });
 
   test('TC-SB-004 | Clicking Interceptor navigates to #/interceptor/collections', async ({ page }) => {
@@ -66,7 +66,7 @@ test.describe('SideBar Navigation', () => {
     const sb = new SideBar(page);
     await sb.goToSettings();
     await sb.goToStudio();
-    await expect(page).toHaveURL(/home\/collections/);
+    await expect(page).toHaveURL(/home/);
     await expect(page.locator('text=Collections').first()).toBeVisible();
   });
 

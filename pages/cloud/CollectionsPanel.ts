@@ -9,37 +9,51 @@ export class CollectionsPanel {
   newBtn              = () => this.page.locator('button:has-text("New"), [data-testid="new-collection"]').first();
   docsBtn             = () => this.page.locator('button[title*="documentation" i], button[aria-label*="doc" i]').first();
   trashBtn            = () => this.page.locator('button[title*="trash" i], button[aria-label*="delete all" i], .trash-btn').first();
-  collectionItems     = () => this.page.locator('li[class*="collection"], [data-testid="collection-row"], .collection-item');
-  collectionByName    = (name: string) => this.page.locator('li, [class*="collection-item"]').filter({ hasText: name }).first();
-  expandArrow         = (name: string) => this.collectionByName(name).locator('[class*="arrow"], [class*="chevron"], svg').first();
-  moreMenuBtn         = (name: string) => this.collectionByName(name).locator('button').last();
-  addFolderIcon       = (name: string) => this.collectionByName(name).locator('button').nth(-2);
-  loadingSpinner      = () => this.page.locator('text=Loading...').first();
 
-  newCollModal      = () => this.page.locator('[role="dialog"], .modal').filter({ hasText: 'New Collection' }).first();
+  // Collection items — Angular CDK tree uses role="treeitem" for each collection row
+  collectionItems = () => this.page.locator('[role="treeitem"]');
+
+  collectionByName = (name: string) => this.page.locator('[role="treeitem"]').filter({ hasText: name }).first();
+  expandArrow      = (name: string) => this.collectionByName(name).locator('[class*="arrow"], [class*="chevron"], svg').first();
+  moreMenuBtn      = (name: string) => this.collectionByName(name).locator('button').last();
+  addFolderIcon    = (name: string) => this.collectionByName(name).locator('button').nth(-2);
+  loadingSpinner   = () => this.page.locator('text=Loading...').first();
+
+  // App uses a custom modal (no role="dialog") — match by modal title + form content
+  newCollModal      = () => this.page.locator('div').filter({ has: this.page.locator('text=New Collection') })
+                              .filter({ has: this.page.locator('input[placeholder*="label" i]') }).first();
   newCollLabelInput = () => this.page.locator('input[placeholder*="label" i], input[name="label"]').first();
-  newCollSaveBtn    = () => this.page.locator('[role="dialog"] button:has-text("Save"), .modal button:has-text("Save")').first();
-  newCollCancelBtn  = () => this.page.locator('[role="dialog"] button:has-text("Cancel")').first();
+  newCollSaveBtn    = () => this.newCollModal().locator('button:has-text("Save")').first();
+  newCollCancelBtn  = () => this.newCollModal().locator('button:has-text("Cancel")').first();
 
-  contextMenu = () => this.page.locator('[role="menu"], ul.context-menu, .dropdown-menu').first();
-  menuItem    = (label: string) => this.page.locator('[role="menuitem"], li.menu-item').filter({ hasText: label }).first();
+  contextMenu = () => this.page.locator('[role="menuitem"], button, li').filter({ hasText: 'New Request' }).first();
+  menuItem    = (label: string) => this.page.locator('[role="menuitem"], button, li').filter({ hasText: label }).first();
 
-  newRequestModal   = () => this.page.locator('[role="dialog"]').filter({ hasText: 'New Request' }).first();
-  newRequestLabel   = () => this.page.locator('[role="dialog"] input[placeholder*="label" i]').first();
-  newRequestSaveBtn = () => this.page.locator('[role="dialog"] button:has-text("Save")').first();
+  newRequestModal   = () => this.page.locator('div').filter({ has: this.page.locator('text=New Request') })
+                              .filter({ has: this.page.locator('input') }).first();
+  newRequestLabel   = () => this.newRequestModal().locator('input').first();
+  newRequestSaveBtn = () => this.newRequestModal().locator('button:has-text("Save")').first();
 
-  runModal = () => this.page.locator('[role="dialog"]').filter({ hasText: 'Run' }).first();
+  runModal = () => this.page.locator('div').filter({ has: this.page.locator('text=Run Collection') }).filter({ has: this.page.locator('button') }).last();
 
   async waitForLoad() {
     await this.loadingSpinner().waitFor({ state: 'hidden', timeout: 20_000 }).catch(() => {});
   }
 
-  async search(query: string) { await this.searchInput().fill(query); }
-  async clearSearch()         { await this.searchInput().clear(); }
+  async search(query: string) {
+    await this.searchInput().fill(query);
+    // Wait for the collection list to re-render after filter
+    await this.page.waitForTimeout(800);
+  }
+
+  async clearSearch() {
+    await this.searchInput().clear();
+    await this.page.waitForTimeout(400);
+  }
 
   async clickNew() {
     await this.newBtn().click();
-    await this.newCollModal().waitFor({ state: 'visible' });
+    await this.newCollModal().waitFor({ state: 'visible', timeout: 10_000 });
   }
 
   async createCollection(label: string) {
@@ -64,7 +78,7 @@ export class CollectionsPanel {
   async openContextMenu(name: string) {
     await this.collectionByName(name).hover();
     await this.moreMenuBtn(name).click();
-    await this.contextMenu().waitFor({ state: 'visible' });
+    await this.contextMenu().waitFor({ state: 'visible', timeout: 15_000 });
   }
 
   async clickContextMenuItem(name: string, item: string) {
@@ -74,7 +88,7 @@ export class CollectionsPanel {
 
   async addNewRequest(collectionName: string, requestLabel: string) {
     await this.clickContextMenuItem(collectionName, 'New Request');
-    await this.newRequestModal().waitFor({ state: 'visible' });
+    await this.newRequestModal().waitFor({ state: 'visible', timeout: 8_000 });
     await this.newRequestLabel().fill(requestLabel);
     await this.newRequestSaveBtn().click();
     await this.newRequestModal().waitFor({ state: 'hidden', timeout: 8_000 });

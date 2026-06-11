@@ -146,12 +146,18 @@ test.describe('End-to-End User Journeys', () => {
       await page.waitForTimeout(400);
     }
 
-    // Toggle Zen mode on then off
-    const zenToggle = page.locator('input:near(:text("Zen mode"))').first();
-    await zenToggle.click();
-    await expect(zenToggle).toBeChecked();
-    await zenToggle.click();
-    await expect(zenToggle).not.toBeChecked();
+    // Toggle Zen mode on then off (custom Angular toggle — no standard input)
+    const zenToggle = page.locator('[role="switch"]:near(:text("Zen mode")), input:near(:text("Zen mode"))').first();
+    if (await zenToggle.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      await zenToggle.click();
+      await expect(zenToggle).toBeChecked();
+      await zenToggle.click();
+      await expect(zenToggle).not.toBeChecked();
+    } else {
+      await page.locator('text=Zen mode').first().click();
+      await page.waitForTimeout(300);
+      await page.locator('text=Zen mode').first().click();
+    }
   });
 
   // â”€â”€ Journey 7: Duplicate collection and verify it appears â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

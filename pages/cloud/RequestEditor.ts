@@ -7,14 +7,14 @@ export class RequestEditor {
   isoTab       = () => this.page.locator('[role="tab"]:has-text("ISO"), .tab-item:has-text("ISO")').first();
   realtimeTab  = () => this.page.locator('[role="tab"]:has-text("Realtime"), .tab-item:has-text("Realtime")').first();
 
-  methodDropdown = () => this.page.locator('button:has-text("GET"), button:has-text("POST"), .method-select, [data-testid="method-dropdown"]').first();
+  methodDropdown = () => this.page.locator('[placeholder="Method"]').first();
   urlInput       = () => this.page.locator('input[placeholder*="url" i], input[placeholder*="enter url" i], .url-input').first();
   portInput      = () => this.page.locator('input[placeholder*="port" i], input[type="number"][value="6666"]').first();
   sendBtn        = () => this.page.locator('button:has-text("Send"):not(:has-text("Pre"))').first();
   publishBtn     = () => this.page.locator('button:has-text("Publish")').first();
   saveBtn        = () => this.page.locator('button:has-text("Save"), [data-testid="save-btn"]').first();
 
-  methodOption   = (m: string) => this.page.locator(`[role="option"]:has-text("${m}"), li:has-text("${m}")`).first();
+  methodOption   = (m: string) => this.page.locator(`[role="option"]:has-text("${m}"), li:has-text("${m}"), div:text-is("${m}"), span:text-is("${m}")`).first();
 
   bodyTab            = () => this.page.locator('[role="tab"]:has-text("Body"), .editor-tab:has-text("Body")').first();
   parametersTab      = () => this.page.locator('[role="tab"]:has-text("Parameters"), .editor-tab:has-text("Parameters")').first();
@@ -33,9 +33,9 @@ export class RequestEditor {
   queryParamsSection  = () => this.page.locator('text=Query Parameters').first();
   headerListSection   = () => this.page.locator('text=Header List').first();
 
-  authTypeDropdown    = () => this.page.locator('select, [data-testid="auth-type"], .auth-type-select').first();
+  authTypeDropdown    = () => this.page.getByRole('tabpanel', { name: 'Authorization' }).getByRole('textbox').first();
   authEnabledCheckbox = () => this.page.locator('input[type="checkbox"]:near(:text("Enabled")), label:has-text("Enabled") input').first();
-  authTypeOption      = (t: string) => this.page.locator(`[role="option"]:has-text("${t}"), li:has-text("${t}")`).first();
+  authTypeOption      = (t: string) => this.page.locator(`[role="option"]:has-text("${t}"), li:has-text("${t}"), div:text-is("${t}"), span:text-is("${t}")`).first();
   noAuthMessage       = () => this.page.locator('text=This request does not use any authorization').first();
 
   rulesCodeEditor     = () => this.page.locator('.cm-content, .code-editor, [class*="code-editor"]').first();

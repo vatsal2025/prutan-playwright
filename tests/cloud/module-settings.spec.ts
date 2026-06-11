@@ -29,8 +29,9 @@ test.describe('Settings â€º Theme â€º Background', () => {
   });
 
   test('SET-BG-005 | Four background theme buttons are present', async ({ page }) => {
-    // System | Light | Cloud/Auto | Dark â€” icon buttons
-    const buttons = page.locator('[class*="theme-option"], [class*="bg-btn"], .background-option, button[title*="System" i], button[title*="Light" i], button[title*="Dark" i]');
+    // Background section has icon-only buttons; scope by heading level 4
+    const bgSection = page.locator('div').filter({ has: page.getByRole('heading', { name: 'Background', level: 4 }) }).last();
+    const buttons = bgSection.locator('button');
     const count = await buttons.count();
     expect(count).toBeGreaterThanOrEqual(3);
   });
@@ -181,7 +182,7 @@ test.describe('Settings â€º Integrations', () => {
   });
 
   test('SET-INT-001 | "Integrations" heading is visible', async ({ page }) => {
-    await expect(page.locator('h1:has-text("Integrations"), h2:has-text("Integrations"), text=Integrations').first()).toBeVisible();
+    await expect(page.locator('text=Integrations').first()).toBeVisible();
   });
 
   test('SET-INT-002 | "Available integrations." subtitle is visible', async ({ page }) => {
@@ -189,30 +190,31 @@ test.describe('Settings â€º Integrations', () => {
   });
 
   const integrations = [
-    { name: 'WISO Configuration',  subtitle: 'Configure LLM provider and model settings' },
-    { name: 'Slack',               subtitle: 'A team communication tool' },
-    { name: 'Jira',                subtitle: 'Project and software tracking' },
-    { name: 'Teams',               subtitle: 'Microsoft teams communication tool' },
-    { name: 'WhatsApp',            subtitle: 'Facebook messaging and calling application' },
-    { name: 'Email',               subtitle: 'Any email provider' },
+    { name: 'AI Configuration',  subtitle: 'Configure LLM provider and model settings', disabled: false },
+    { name: 'Slack',               subtitle: 'A team communication tool',                 disabled: true },
+    { name: 'Jira',                subtitle: 'Project and software tracking',              disabled: true },
+    { name: 'Teams',               subtitle: 'Microsoft teams communication tool',         disabled: true },
+    { name: 'WhatsApp',            subtitle: 'Facebook messaging and calling application', disabled: true },
+    { name: 'Email',               subtitle: 'Any email provider',                         disabled: true },
   ];
 
-  for (const { name, subtitle } of integrations) {
+  for (const { name, subtitle, disabled } of integrations) {
     test(`SET-INT-NAME-${name.replace(/\s/g,'-')} | "${name}" row is listed`, async ({ page }) => {
-      await expect(page.locator(`text=${name}`).first()).toBeVisible();
+      await expect(page.getByRole('heading', { name, level: 4 })).toBeVisible();
     });
 
     test(`SET-INT-SUB-${name.replace(/\s/g,'-')} | "${name}" shows correct subtitle`, async ({ page }) => {
       await expect(page.locator(`text=${subtitle}`).first()).toBeVisible();
     });
 
-    test(`SET-INT-DISABLED-${name.replace(/\s/g,'-')} | "${name}" shows "Disabled" by default`, async ({ page }) => {
-      const row = page.locator('li, [class*="integration-item"]').filter({ hasText: name }).first();
-      await expect(row.locator('text=Disabled').first()).toBeVisible();
+    test(`SET-INT-DISABLED-${name.replace(/\s/g,'-')} | "${name}" shows correct enabled/disabled state`, async ({ page }) => {
+      const stateText = disabled ? 'Disabled' : 'Enabled';
+      const row = page.locator('div').filter({ has: page.getByRole('heading', { name, level: 4 }) }).filter({ has: page.locator('button') }).last();
+      await expect(row.locator(`text=${stateText}`).first()).toBeVisible();
     });
 
     test(`SET-INT-TOGGLE-${name.replace(/\s/g,'-')} | "${name}" toggle can be switched on/off`, async ({ page }) => {
-      const row    = page.locator('li, [class*="integration-item"]').filter({ hasText: name }).first();
+      const row    = page.locator('div').filter({ has: page.getByRole('heading', { name, level: 4 }) }).filter({ has: page.locator('button') }).last();
       const toggle = row.locator('input[type="checkbox"], [role="switch"]').first();
       if (await toggle.isVisible({ timeout: 3000 }).catch(() => false)) {
         const before = await toggle.isChecked();
@@ -223,7 +225,7 @@ test.describe('Settings â€º Integrations', () => {
     });
 
     test(`SET-INT-CFG-${name.replace(/\s/g,'-')} | "${name}" has a âš™ configure button`, async ({ page }) => {
-      const row    = page.locator('li, [class*="integration-item"]').filter({ hasText: name }).first();
+      const row    = page.locator('div').filter({ has: page.getByRole('heading', { name, level: 4 }) }).filter({ has: page.locator('button') }).last();
       const cfgBtn = row.locator('button').first();
       await expect(cfgBtn).toBeVisible();
     });

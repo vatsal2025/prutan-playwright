@@ -3,7 +3,7 @@ import { Page, expect } from '@playwright/test';
 export class Trace {
   constructor(readonly page: Page) {}
 
-  heading             = () => this.page.locator('h1:has-text("Trace Viewer"), text=Trace Viewer').first();
+  heading             = () => this.page.getByRole('heading', { name: 'Trace Viewer' });
   subtitle            = () => this.page.locator('text=Search requests by trace ID').first();
   searchInput         = () => this.page.locator('input[placeholder*="BOI" i], input[placeholder*="trace" i]').first();
   timeRangeFrom       = () => this.page.locator('input[type="datetime-local"]').first();

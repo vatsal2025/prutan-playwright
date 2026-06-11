@@ -8,7 +8,7 @@ import { ROUTES } from '../../utils/cloud-constants';
  * From live inspection:
  * - Clicking WISO when unauthenticated shows "Please login to use this feature." toast
  * - Authenticated: navigates to WISO AI chat/assistant UI
- * - Settings â†’ Integrations â†’ WISO Configuration: "Configure LLM provider and model settings"
+ * - Settings -> Integrations -> WISO Configuration: "Configure LLM provider and model settings"
  */
 test.describe('WISO Module', () => {
 
@@ -35,7 +35,7 @@ test.describe('WISO Module', () => {
   });
 
   test('TC-WS-004 | Top bar is intact on WISO page', async ({ page }) => {
-    await expect(page.locator('text=PruTAN, img[alt*="PruTAN"]').first()).toBeVisible();
+    await expect(page.locator('text=PruTAN').first()).toBeVisible();
     await expect(page.locator('text=My Workspace').first()).toBeVisible();
   });
 
@@ -53,31 +53,31 @@ test.describe('WISO Configuration (via Settings)', () => {
     await page.locator('text=Integrations').first().scrollIntoViewIfNeeded();
   });
 
-  test('TC-WS-006 | WISO Configuration row is listed in Settings â†’ Integrations', async ({ page }) => {
-    await expect(page.locator('text=WISO Configuration').first()).toBeVisible();
+  test('TC-WS-006 | AI Configuration row is listed in Settings -> Integrations', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'AI Configuration', level: 4 })).toBeVisible();
   });
 
-  test('TC-WS-007 | WISO Configuration subtitle: "Configure LLM provider and model settings"', async ({ page }) => {
+  test('TC-WS-007 | AI Configuration subtitle: "Configure LLM provider and model settings"', async ({ page }) => {
     await expect(
       page.locator('text=Configure LLM provider and model settings').first()
     ).toBeVisible();
   });
 
-  test('TC-WS-008 | WISO Configuration toggle starts as Disabled', async ({ page }) => {
-    const row = page.locator('[class*="integration"], .integration-item').filter({ hasText: 'WISO Configuration' }).first();
-    await expect(row.locator('text=Disabled').first()).toBeVisible();
+  test('TC-WS-008 | AI Configuration shows Enabled by default', async ({ page }) => {
+    const row = page.locator('div').filter({ has: page.getByRole('heading', { name: 'AI Configuration', level: 4 }) }).filter({ has: page.locator('button') }).last();
+    await expect(row.locator('text=Enabled').first()).toBeVisible();
   });
 
-  test('TC-WS-009 | WISO Configuration has a âš™ configure button', async ({ page }) => {
-    const row = page.locator('[class*="integration"], .integration-item').filter({ hasText: 'WISO Configuration' }).first();
-    const configBtn = row.locator('button[title*="configure" i], button[aria-label*="config" i], .config-btn').first();
+  test('TC-WS-009 | AI Configuration has a âš™ configure button', async ({ page }) => {
+    const row = page.locator('div').filter({ has: page.getByRole('heading', { name: 'AI Configuration', level: 4 }) }).filter({ has: page.locator('button') }).last();
+    const configBtn = row.locator('button').first();
     await expect(configBtn).toBeVisible();
   });
 
-  test('TC-WS-010 | WISO Configuration toggle can be switched on', async ({ page }) => {
-    const row = page.locator('[class*="integration"], .integration-item').filter({ hasText: 'WISO Configuration' }).first();
+  test('TC-WS-010 | AI Configuration toggle can be switched', async ({ page }) => {
+    const row = page.locator('div').filter({ has: page.getByRole('heading', { name: 'AI Configuration', level: 4 }) }).last();
     const toggle = row.locator('input[type="checkbox"], [role="switch"]').first();
-    if (await toggle.isVisible()) {
+    if (await toggle.isVisible({ timeout: 3_000 }).catch(() => false)) {
       const before = await toggle.isChecked();
       await toggle.click();
       const after = await toggle.isChecked();

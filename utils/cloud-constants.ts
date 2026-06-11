@@ -10,9 +10,9 @@ export const ROUTES = {
   STUDIO      : `${BASE_URL}/prutan/core/ui/#/home/collections`,
   SANDBOX     : `${BASE_URL}/prutan/core/ui/#/host/collections`,
   INTERCEPTOR : `${BASE_URL}/prutan/core/ui/#/interceptor/collections`,
-  STRESS_LAB  : `${BASE_URL}/prutan/core/ui/#/stress-lab`,
+  STRESS_LAB  : `${BASE_URL}/prutan/core/ui/#/stress`,
   TRACE       : `${BASE_URL}/prutan/core/ui/#/trace`,
-  WISO        : `${BASE_URL}/prutan/core/ui/#/wiso`,
+  WISO        : `${BASE_URL}/prutan/core/ui/#/genai`,
   SETTINGS    : `${BASE_URL}/prutan/core/ui/#/settings`,
 };
 
@@ -42,7 +42,7 @@ export const REQUEST_TABS = [
 export const PROTOCOL_TABS = ['Rest','ISO','Realtime'] as const;
 
 export const INTEGRATIONS = [
-  'WISO Configuration','Slack','Jira','Teams','WhatsApp','Email',
+  'AI Configuration','Slack','Jira','Teams','WhatsApp','Email',
 ] as const;
 
 export const REAL_COLLECTIONS = [

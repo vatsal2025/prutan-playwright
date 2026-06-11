@@ -64,7 +64,7 @@ test.describe('Stress Lab', () => {
 
   test('TC-SL-010 | Benchmark section: Type dropdown shows "Constant"', async ({ page }) => {
     const sl = new StressLab(page);
-    await expect(sl.benchmarkTypeDropdown()).toContainText('Constant');
+    await expect(sl.benchmarkTypeDropdown()).toHaveValue('Constant');
   });
 
   test('TC-SL-011 | Benchmark section: Threshold and Select Host inputs present', async ({ page }) => {
