@@ -4,6 +4,9 @@ import * as path from 'path';
 import * as https from 'https';
 import * as http from 'http';
 import { Config } from './support/config';
+import { findPrutanApp, isPortOpen, waitForPort, launchApp } from './support/desktop-launcher';
+
+const DESKTOP_PID_FILE = path.resolve(__dirname, '.desktop-pid');
 
 export default async function globalSetup(_config: FullConfig) {
   const authDir = path.resolve(__dirname, 'auth');
@@ -39,17 +42,50 @@ export default async function globalSetup(_config: FullConfig) {
       fs.writeFileSync(pythonStatePath, JSON.stringify({ cookies: [], origins: [] }, null, 2));
     }
   } else {
-    console.log('[setup] PYTHON_ENGINE_USER not set — writing empty python auth (python-engine tests will be skipped or unauthenticated)');
+    console.log('[setup] PYTHON_ENGINE_USER not set — writing empty python auth');
     fs.writeFileSync(pythonStatePath, JSON.stringify({ cookies: [], origins: [] }, null, 2));
   }
 
+  // ── Desktop app auto-launch ───────────────────────────────────────────────
+  const cdpUrl  = new URL(Config.desktop.cdpUrl);
+  const cdpPort = parseInt(cdpUrl.port || '9222', 10);
+
+  const alreadyRunning = await isPortOpen(cdpPort);
+
+  if (alreadyRunning) {
+    console.log(`[setup] Desktop app already running on CDP port ${cdpPort} — skipping launch`);
+  } else {
+    const appBin = findPrutanApp(Config.desktop.appPath);
+
+    if (appBin) {
+      console.log(`[setup] Launching desktop app: ${appBin}`);
+      const proc = launchApp(appBin, cdpPort);
+
+      if (proc.pid) {
+        fs.writeFileSync(DESKTOP_PID_FILE, String(proc.pid));
+        console.log(`[setup] Desktop app PID ${proc.pid} saved to .desktop-pid`);
+      }
+
+      const ready = await waitForPort(cdpPort, 25_000);
+      if (ready) {
+        console.log(`[setup] Desktop app ready on CDP port ${cdpPort}`);
+      } else {
+        console.warn(`[setup] Desktop app did not expose CDP on port ${cdpPort} within 25s — desktop tests will skip`);
+      }
+    } else {
+      const hint = process.platform === 'win32'
+        ? 'Install Prutan or set PRUTAN_APP_PATH=C:\\path\\to\\Prutan.exe in .env'
+        : 'Install Prutan or set PRUTAN_APP_PATH=/path/to/Prutan in .env';
+      console.log(`[setup] Desktop app not found — java-desktop tests will skip. ${hint}`);
+    }
+  }
 }
 
 function loginAndGetToken(baseUrl: string, email: string, password: string): Promise<string | null> {
   return new Promise((resolve) => {
     const body = JSON.stringify({ email, password, provider: 'SELF' });
-    const url = new URL('/prutan/core/login', baseUrl);
-    const lib = url.protocol === 'https:' ? https : http;
+    const url  = new URL('/prutan/core/login', baseUrl);
+    const lib  = url.protocol === 'https:' ? https : http;
 
     const req = lib.request(
       {

@@ -12,9 +12,12 @@ export const Config = {
     password: process.env['PYTHON_ENGINE_PASS'] ?? '',
   },
   desktop: {
-    cdpUrl: process.env['DESKTOP_CDP_URL'] ?? 'http://localhost:9222',
+    cdpUrl:  process.env['DESKTOP_CDP_URL']  ?? 'http://localhost:9222',
     baseUrl: process.env['DESKTOP_BASE_URL'] ?? 'http://localhost:59140',
-    user: process.env['DESKTOP_USER'] ?? '',
+    user:    process.env['DESKTOP_USER']     ?? '',
+    // Optional: full path to Prutan.exe / Prutan app binary.
+    // If unset, common install locations are searched automatically.
+    appPath: process.env['PRUTAN_APP_PATH']  ?? '',
   },
   javaRef: {
     url: process.env['JAVA_REF_URL'] ?? 'https://app.prutan.com',

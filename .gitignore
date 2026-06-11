@@ -5,4 +5,6 @@ test-results/
 auth/
 .env
 py_storage.json
+.desktop-pid
+.codebase-mcp/
 *.png

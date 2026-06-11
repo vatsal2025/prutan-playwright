@@ -31,19 +31,23 @@ type PageFixtures = {
 const withCore = base.extend<CoreFixtures>({
   prutanPage: async ({ page }, use, testInfo) => {
     if (testInfo.project.name === 'java-desktop') {
+      // global-setup auto-launches the app if found; fixture just connects via CDP.
       try {
         const cdpBrowser = await chromium.connectOverCDP(Config.desktop.cdpUrl);
-        const ctx = cdpBrowser.contexts()[0];
+        const ctx    = cdpBrowser.contexts()[0];
         const cdpPage = ctx.pages()[0];
         await use(cdpPage);
         await cdpBrowser.close();
       } catch (e: any) {
-        testInfo.skip(true, `Desktop app not running — start Prutan.exe with CDP on port 9222 first (${e.message?.slice(0, 60)})`);
+        testInfo.skip(
+          true,
+          `Desktop app not reachable on ${Config.desktop.cdpUrl}. ` +
+          `Set PRUTAN_APP_PATH in .env or install Prutan to a standard location. (${e.message?.slice(0, 60)})`,
+        );
         await use(page);
       }
     } else {
-      // python-engine — storageState pre-loaded from py_storage.json via global-setup
-      // Navigate to the app so Angular bootstraps and localStorage auth is active
+      // python-engine — storageState pre-loaded via global-setup
       const appUrl = `${Config.pythonEngine.url}${APP_PATH}`;
       await page.goto(appUrl, { waitUntil: 'domcontentloaded', timeout: 30_000 });
       await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {});
