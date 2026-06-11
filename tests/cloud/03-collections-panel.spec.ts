@@ -1,6 +1,6 @@
 ﻿import { test, expect } from '@playwright/test';
 import { CollectionsPanel } from '../../pages/cloud/CollectionsPanel';
-import { ROUTES, REAL_COLLECTIONS, COLLECTION_MENU } from '../../utils/cloud-constants';
+import { ROUTES, COLLECTION_MENU } from '../../utils/cloud-constants';
 
 const TS   = Date.now();
 const COLL = `E2E_AutoTest_${TS}`;
@@ -55,14 +55,27 @@ test.describe('Collections Panel', () => {
     expect(count).toBeGreaterThanOrEqual(3);
   });
 
-  test('TC-CP-006 | "Prutan ISO-8583" collection is visible', async ({ page }) => {
+  test('TC-CP-006 | At least one collection matches user account data', async ({ page }) => {
     const cp = new CollectionsPanel(page);
-    await cp.assertCollectionVisible('Prutan ISO-8583');
+    // Each user has different collections — just verify the list is populated
+    const items = cp.collectionItems();
+    await expect(items.first()).toBeVisible({ timeout: 15_000 });
+    const count = await items.count();
+    expect(count).toBeGreaterThanOrEqual(1);
   });
 
-  test('TC-CP-007 | "Moneris API - Scenarios" collection is visible', async ({ page }) => {
+  test('TC-CP-007 | Search finds collections by partial name', async ({ page }) => {
     const cp = new CollectionsPanel(page);
-    await cp.assertCollectionVisible('Moneris API - Scenarios');
+    // Get first collection name dynamically then search for it
+    const firstItem = cp.collectionItems().first();
+    await expect(firstItem).toBeVisible({ timeout: 15_000 });
+    const name = (await firstItem.textContent() ?? '').trim().slice(0, 5);
+    if (!name) { test.skip(); return; }
+    await cp.search(name);
+    await page.waitForTimeout(400);
+    const filtered = await cp.collectionItems().count();
+    expect(filtered).toBeGreaterThan(0);
+    await cp.clearSearch();
   });
 
   // â”€â”€ Search / filter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -134,17 +147,25 @@ test.describe('Collections Panel', () => {
   });
 
   // â”€â”€ Context Menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  test('TC-CP-016 | Hovering a collection reveals â‹® menu button', async ({ page }) => {
+  test('TC-CP-016 | Hovering a collection reveals menu button', async ({ page }) => {
     const cp = new CollectionsPanel(page);
-    const name = REAL_COLLECTIONS[0]; // 'Test'
+    // Use first available collection — works for any user's account
+    const firstItem = cp.collectionItems().first();
+    await expect(firstItem).toBeVisible({ timeout: 15_000 });
+    const name = (await firstItem.textContent() ?? '').trim();
+    if (!name) { test.skip(); return; }
     await cp.collectionByName(name).hover();
-    const lastBtn = cp.moreMenuBtn(name);
-    await expect(lastBtn).toBeVisible();
+    await expect(cp.moreMenuBtn(name)).toBeVisible();
   });
 
   test('TC-CP-017 | Context menu shows all 8 required items', async ({ page }) => {
     const cp = new CollectionsPanel(page);
-    await cp.openContextMenu(REAL_COLLECTIONS[0]);
+    // Use first available collection — works for any user's account
+    const firstItem = cp.collectionItems().first();
+    await expect(firstItem).toBeVisible({ timeout: 15_000 });
+    const name = (await firstItem.textContent() ?? '').trim();
+    if (!name) { test.skip(); return; }
+    await cp.openContextMenu(name);
     await cp.assertContextMenuItems();
     await page.keyboard.press('Escape');
   });

@@ -63,7 +63,7 @@ export class StressLabPage extends BasePage {
     await this.page.waitForTimeout(400);
     const editor = this.page.locator('[class*="script"] .cm-content, [class*="stress"] .cm-content').first();
     await editor.click().catch(() => {});
-    await this.page.keyboard.press('Control+a');
+    await this.page.keyboard.press('ControlOrMeta+a');
     await this.page.keyboard.type(js);
   }
 

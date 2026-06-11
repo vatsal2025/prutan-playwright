@@ -160,7 +160,12 @@ test.describe('End-to-End User Journeys', () => {
     await page.waitForFunction(() => !document.body.innerText.includes('Loading...'), { timeout: 15_000 }).catch(() => {});
 
     const cp = new CollectionsPanel(page);
-    const target = 'Test'; // first real collection seen in live session
+
+    // Use first available collection — works for any user's account
+    const firstItem = cp.collectionItems().first();
+    await expect(firstItem).toBeVisible({ timeout: 15_000 });
+    const target = (await firstItem.textContent() ?? '').trim();
+    if (!target) { test.skip(); return; }
 
     const before = await cp.collectionItems().count();
     await cp.duplicateCollection(target);
@@ -168,8 +173,9 @@ test.describe('End-to-End User Journeys', () => {
     const after = await cp.collectionItems().count();
     expect(after).toBeGreaterThan(before);
 
-    // Cleanup the duplicate (it usually appears as "Test copy" or "Test_1")
-    const duplicate = cp.collectionItems().filter({ hasText: /test.*copy|test.*_1|copy.*test/i }).first();
+    // Cleanup the duplicate — usually appears as "{target}_1" or "{target} copy"
+    const targetLower = target.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const duplicate = cp.collectionItems().filter({ hasText: new RegExp(`${targetLower}.*(_1|copy)|(copy|_1).*${targetLower}`, 'i') }).first();
     if (await duplicate.isVisible({ timeout: 3000 }).catch(() => false)) {
       await duplicate.hover();
       await duplicate.locator('button').last().click();

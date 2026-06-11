@@ -41,10 +41,10 @@ export default defineConfig({
     // ── Python Engine ───────────────────────────────────────────────────────
     {
       name: 'python-engine',
+      testIgnore: ['**/cloud/**'],
       use: {
         ...devices['Desktop Chrome'],
         baseURL: `${PYTHON_BASE}/prutan/core/ui/`,
-        // Auth state pre-built by global-setup from py_storage.json / .env token
         storageState: './auth/python-auth.json',
         viewport: { width: 1400, height: 900 },
       },
@@ -52,13 +52,13 @@ export default defineConfig({
 
     // ── Java Desktop (Electron via CDP) ─────────────────────────────────────
     // CDP connection is handled in the `prutanPage` fixture (fixtures/index.ts)
-    // Electron must be running: open E:\PruTan\Prutan.exe before running desktop tests
+    // Start Prutan.exe with --remote-debugging-port=9222 before running desktop tests.
     {
       name: 'java-desktop',
+      testIgnore: ['**/cloud/**'],
       use: {
-        // baseURL not used for CDP — kept for reference/debugging
         baseURL: process.env['DESKTOP_BASE_URL'] ?? 'http://localhost:59140',
-        viewport: null, // CDP pages use the window's native viewport
+        viewport: null,
       },
     },
 

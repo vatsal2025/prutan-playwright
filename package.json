@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "Playwright E2E test framework for PruTAN — Python engine & Java Desktop",
   "scripts": {
-    "test": "playwright test",
+    "test": "playwright test --project=python-engine --project=java-desktop",
     "test:python": "playwright test --project=python-engine",
     "test:desktop": "playwright test --project=java-desktop",
+    "test:cloud": "playwright test --project=prutan-cloud",
+    "test:all": "playwright test",
     "test:smoke": "playwright test --grep @smoke",
     "test:studio": "playwright test tests/studio",
     "test:sandbox": "playwright test tests/sandbox",
@@ -14,8 +16,7 @@
     "test:stresslab": "playwright test tests/stresslab",
     "test:wiso": "playwright test tests/wiso",
     "report": "playwright show-report",
-    "auth:refresh": "ts-node support/refresh-auth.ts",
-    "codegen": "playwright codegen http://13.233.206.245:8080/prutan/core/ui/"
+    "codegen": "playwright codegen"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",

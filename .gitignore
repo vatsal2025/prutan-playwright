@@ -4,4 +4,5 @@ playwright-report/
 test-results/
 auth/
 .env
+py_storage.json
 *.png

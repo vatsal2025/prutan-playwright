@@ -89,7 +89,7 @@ export class StudioPage extends BasePage {
 
     await this.bodyEditor.waitFor({ state: 'visible', timeout: 10000 });
     await this.bodyEditor.click({ timeout: 5000 });
-    await this.page.keyboard.press('Control+a');
+    await this.page.keyboard.press('ControlOrMeta+a');
     await this.page.keyboard.type(content);
   }
 
@@ -103,7 +103,7 @@ export class StudioPage extends BasePage {
     await this.clickRequestTab('Pre-request Script');
     const editor = this.page.locator('.cm-content').first();
     await editor.click();
-    await this.page.keyboard.press('Control+a');
+    await this.page.keyboard.press('ControlOrMeta+a');
     await this.page.keyboard.type(js);
   }
 

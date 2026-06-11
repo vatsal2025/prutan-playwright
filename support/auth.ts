@@ -27,11 +27,6 @@ export async function injectAuth(page: Page, storage?: Partial<PruTanStorage>): 
   const base = loadPyStorage();
   const merged: PruTanStorage = { ...base, ...storage };
 
-  // Override token from .env if provided (fresh token wins)
-  if (Config.pythonEngine.token) {
-    merged.auth = Config.pythonEngine.token;
-  }
-
   await page.addInitScript((entries: Record<string, string>) => {
     for (const [key, value] of Object.entries(entries)) {
       if (value !== undefined) {
@@ -51,15 +46,20 @@ export function isTokenExpired(token: string): boolean {
   }
 }
 
-/** Warn if token in .env is expired */
+/** Warn if token in py_storage.json is expired */
 export function checkTokenExpiry(): void {
-  const token = Config.pythonEngine.token;
-  if (!token) {
-    console.warn('[auth] No PYTHON_ENGINE_TOKEN in .env — auth may fail for Python engine');
-    return;
-  }
-  if (isTokenExpired(token)) {
-    console.warn('[auth] PYTHON_ENGINE_TOKEN is EXPIRED. Get a fresh token from DevTools → Application → Local Storage → auth');
+  try {
+    const storage = loadPyStorage();
+    const token = storage.auth;
+    if (!token) {
+      console.warn('[auth] No auth token in py_storage.json — run tests first to generate one');
+      return;
+    }
+    if (isTokenExpired(token)) {
+      console.warn('[auth] Auth token is EXPIRED. Re-run tests to refresh via PYTHON_ENGINE_USER/PASS login.');
+    }
+  } catch {
+    console.warn('[auth] Could not read py_storage.json — run tests to initialise auth');
   }
 }
 
@@ -73,9 +73,6 @@ export async function saveStorageState(context: BrowserContext, filename: string
 /** Build a Playwright storageState object from py_storage.json for globalSetup use */
 export function buildStorageState(baseUrl: string): object {
   const storage = loadPyStorage();
-  if (Config.pythonEngine.token) {
-    storage.auth = Config.pythonEngine.token;
-  }
 
   const lsEntries = Object.entries(storage)
     .filter(([, v]) => v !== undefined)
@@ -83,11 +80,6 @@ export function buildStorageState(baseUrl: string): object {
 
   return {
     cookies: [],
-    origins: [
-      {
-        origin: baseUrl,
-        localStorage: lsEntries,
-      },
-    ],
+    origins: [{ origin: baseUrl, localStorage: lsEntries }],
   };
 }

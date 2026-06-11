@@ -64,7 +64,7 @@ export class SandboxPage extends BasePage {
     await this.page.waitForTimeout(400);
     const editor = this.page.locator('[class*="rule"] .cm-content').first();
     await editor.click();
-    await this.page.keyboard.press('Control+a');
+    await this.page.keyboard.press('ControlOrMeta+a');
     await this.page.keyboard.type(js);
   }
 

@@ -46,7 +46,7 @@ const withCore = base.extend<CoreFixtures>({
       // Navigate to the app so Angular bootstraps and localStorage auth is active
       const appUrl = `${Config.pythonEngine.url}${APP_PATH}`;
       await page.goto(appUrl, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {});
       await use(page);
     }
   },
