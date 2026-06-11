@@ -67,12 +67,11 @@ export class StudioPage extends BasePage {
   }
 
   async setMethod(method: RestMethod): Promise<void> {
-    // Click the visible method pill/button (shows current method)
-    await this.page.locator('[class*="method"], #method').first().click();
+    await this.page.locator('#method').click({ force: true });
     await this.page.waitForTimeout(400);
-    // Click the matching option in the dropdown
     await this.page
-      .locator(`button:has-text("${method}"), li:has-text("${method}"), [role="option"]:has-text("${method}")`)
+      .locator(`.select-wrapper li, li, [role="option"], button`)
+      .filter({ hasText: new RegExp(`^${method}$`, 'i') })
       .first()
       .click({ timeout: 5000 });
     await this.page.waitForTimeout(300);
@@ -82,26 +81,11 @@ export class StudioPage extends BasePage {
     const content = typeof jsonBody === 'string' ? jsonBody : JSON.stringify(jsonBody, null, 2);
     await this.clickRequestTab('Body');
 
-    // Select application/json — reveals the CodeMirror body editor
-    // Scope to [role="tabpanel"] to avoid clicking the method dropdown (also a mat-select)
-    try {
-      await this.page
-        .locator('[role="tabpanel"] .mat-mdc-select-trigger, [role="tabpanel"] .mat-select-trigger')
-        .first()
-        .click({ force: true, timeout: 5000 });
-      await this.page.waitForTimeout(500);
-      // mat-option overlay appears in document body (outside the component DOM)
-      await this.page
-        .locator('mat-option, [role="option"]')
-        .filter({ hasText: /application\/json/i })
-        .first()
-        .click({ timeout: 5000 });
-      await this.page.waitForTimeout(600);
-    } catch {
-      // Fallback: native <select>
-      await this.page.locator('select').selectOption('application/json').catch(() => {});
-      await this.page.waitForTimeout(300);
-    }
+    // Content Type is a custom input#contentType — click it then pick application/json
+    await this.page.locator('#contentType').click({ force: true, timeout: 5000 });
+    await this.page.waitForTimeout(400);
+    await this.page.getByText('application/json', { exact: true }).first().click({ timeout: 5000 });
+    await this.page.waitForTimeout(600);
 
     await this.bodyEditor.waitFor({ state: 'visible', timeout: 10000 });
     await this.bodyEditor.click({ timeout: 5000 });

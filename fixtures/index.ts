@@ -31,13 +31,16 @@ type PageFixtures = {
 const withCore = base.extend<CoreFixtures>({
   prutanPage: async ({ page }, use, testInfo) => {
     if (testInfo.project.name === 'java-desktop') {
-      // Connect to already-running Electron app via CDP (already logged in)
-      const cdpBrowser = await chromium.connectOverCDP(Config.desktop.cdpUrl);
-      const ctx = cdpBrowser.contexts()[0];
-      const cdpPage = ctx.pages()[0];
-      await use(cdpPage);
-      // Disconnect only — don't kill the Electron process
-      await cdpBrowser.close();
+      try {
+        const cdpBrowser = await chromium.connectOverCDP(Config.desktop.cdpUrl);
+        const ctx = cdpBrowser.contexts()[0];
+        const cdpPage = ctx.pages()[0];
+        await use(cdpPage);
+        await cdpBrowser.close();
+      } catch (e: any) {
+        testInfo.skip(true, `Desktop app not running — start Prutan.exe with CDP on port 9222 first (${e.message?.slice(0, 60)})`);
+        await use(page);
+      }
     } else {
       // python-engine — storageState pre-loaded from py_storage.json via global-setup
       // Navigate to the app so Angular bootstraps and localStorage auth is active

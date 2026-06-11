@@ -35,7 +35,6 @@ test.describe('Studio › REST', () => {
   // ── @regression ──────────────────────────────────────────────────────────
 
   test('PUT request returns 200 @regression', async ({ studio }) => {
-    test.skip(true, 'BUG: Content Type dropdown selector fails after setMethod(PUT) — needs DOM inspection to fix');
     await studio.setMethod('PUT');
     await studio.setUrl(`${PUBLIC_API}/posts/1`);
     await studio.setBody({ id: 1, title: 'Updated', body: 'test', userId: 1 });
@@ -52,7 +51,7 @@ test.describe('Studio › REST', () => {
   });
 
   test('PATCH request — known bug on both engines @regression', async ({ studio, engine }) => {
-    test.skip(true, 'BUG #2: PATCH returns null status — skipped until body editor selector fixed for all methods');
+    // BUG #2: PATCH returns null status — test documents the bug, doesn't block
     await studio.setMethod('PATCH');
     await studio.setUrl(`${PUBLIC_API}/posts/1`);
     await studio.setBody({ title: 'Patched' });
